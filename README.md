@@ -37,10 +37,10 @@ else
 	$form->method = "post";
 	$form->attr("id+name", "form");
 
-	$singleField = $this->modules->get('InputfieldText');
-	$singleField->name = "name";
-	$singleField->placeholder = "name";
-	$form->add($singleField);
+	$field = $this->modules->get('InputfieldText');
+	$field->name = "name";
+	$field->placeholder = "name";
+	$form->add($field);
 	
 	// CAPTCHA - our form as argument, the function will add an InputfieldMarkup to our form
 	$captcha->render($form);
