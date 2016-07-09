@@ -21,7 +21,7 @@ Render reCAPTCHA in an `InputfieldForm` by passing as argument your form to the 
 4. Call `verifyResponse()` to get the result. It return `TRUE` if the challenge was successfull.
 
 ### Example
-```
+```php
 $out = '';
 
 $captcha = $modules->get("MarkupGoogleRecaptcha");
