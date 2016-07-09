@@ -1,0 +1,154 @@
+<?php
+
+class MarkupGoogleRecaptcha extends WireData implements Module, ConfigurableModule {
+
+    static function getModuleInfo() {
+        return [
+            'title'   => 'Markup Google reCAPTCHA',
+            'summary' => 'Google reCAPTCHA for ProcessWire',
+            'version' => 100,
+            'author'  => 'flydev',
+            'href'    => 'https://github.com/flydev-fr/MarkupGoogleRecaptcha',
+            'autoload'=> false,
+            'singular'=> false
+        ];
+    }
+
+    const SITE_RECAPTCHA_API_URL = "https://www.google.com/recaptcha/api.js";
+    const SITE_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
+
+    protected static $defaultSettings = [
+        'site_key'   => '',
+        'secret_key' => '',
+        'data_theme' => 0,
+        'data_type'  => 0,
+        'data_size'  => 0,
+        'data_index' => '0'
+    ];
+
+    public function __construct()
+    {
+        $this->setArray(self::$defaultSettings);
+    }
+
+
+    public function render($form = null)
+    {
+        if(!$form instanceof InputfieldForm)
+        {
+            $out = $this->buildGoogleDiv();
+            return $out;
+        }
+        else
+        {
+            $inputfield = $this->modules->get("InputfieldMarkup");
+            $inputfield->value = $this->buildGoogleDiv();
+
+            $form->add($inputfield);
+        }
+    }
+
+    protected function buildGoogleDiv()
+    {
+        $attributes = [
+            'class'        => 'g-recaptcha',
+            'data-sitekey' => $this->site_key,
+            'data-theme'   => ($this->data_theme) ? 'dark' : 'light',
+            'data-type'    => ($this->data_type)  ? 'audio' : 'image',
+            'data-size'    => ($this->data_size)  ? 'compact' : 'normal',
+            'data_index'   => ($this->data_index) ? $this->data_index : '0'
+        ];
+
+        $div = '<div '.join(' ', array_map(function($key) use ($attributes)
+            {
+                if(is_bool($attributes[$key]))
+                    return $attributes[$key] ? $key : '';
+                return $key.'="'.$attributes[$key].'"';
+            }, array_keys($attributes))).' ></div>';
+
+        return $div;
+    }
+
+    public function getScript()
+    {
+        return "<script src=".self::SITE_RECAPTCHA_API_URL."></script>";
+    }
+
+    public function verifyResponse()
+    {
+        if (!wire('input')->post['g-recaptcha-response'])
+            return false;
+
+        $data = [
+            'remoteip' => $_SERVER["REMOTE_ADDR"],
+            'secret' => $this->secret_key,
+            'response' => wire('input')->post['g-recaptcha-response']
+        ];
+
+        $http = new WireHttp();
+        $query = http_build_query($data);
+        $response = $http->get(self::SITE_VERIFY_URL."?{$query}");
+        $response = json_decode($response, true);
+
+        return ($response['success'] === true) ? true : false;
+    }
+
+    public static function getModuleConfigInputfields(array $data)
+    {
+        $wrap = new InputfieldWrapper();
+        $form = wire('modules')->get('InputfieldFieldset');
+        $form->label = __('Google reCAPTCHA API Settings');
+        $form->notes = __('You can obtain the above information by creating an API key at [http://www.google.com/recaptcha/admin](http://www.google.com/recaptcha/admin)');
+
+        $inputfields = [
+            'site_key'   => __('Site key'),
+            'secret_key' => __('Secret key')
+        ];
+        foreach($inputfields as $name => $label) {
+            $f = wire('modules')->get('InputfieldText');
+            $f->attr('name', $name);
+            $f->label = $label;
+            $f->required = true;
+            $f->columnWidth = 50;
+            if(isset($data[$name])) $f->attr('value', $data[$name]);
+            $form->add($f);
+        }
+        $wrap->add($form);
+
+        $form = wire('modules')->get('InputfieldFieldset');
+        $form->label = __('Widget Settings');
+
+        $inputfields = [
+            'data_theme' => ['label' => __("Use dark theme"),     'description' => __('The color theme of the widget. Default: light') ],
+            'data_type'  => ['label' => __('Use audio type'),     'description' => __('The type of CAPTCHA to serve. Default: image') ],
+            'data_size'  => ['label' => __('Use compact widget'), 'description' => __('The size of the widget. Default: normal') ]
+        ];
+        foreach($inputfields as $name => $value) {
+            $f = wire('modules')->get("InputfieldCheckbox");
+            $f->name = $name;
+            $f->label = $value['label'];
+            $f->description = $value['description'];
+            $f->value = 0;
+            $f->attr('checked', empty($data[$name]) ? '' : 'checked');
+            $f->columnWidth = 50;
+            $form->add($f);
+        }
+
+        $inputfields = [
+            'data_index' => ['name' => 'data_index', 'label' => __('Tabindex '), 'description' => __('The tabindex of the widget and challenge. Default: 0') ]
+        ];
+        $f = wire('modules')->get('InputfieldText');
+        $f->name = $inputfields['data_index']['name'];
+        $f->label = $inputfields['data_index']['label'];
+        $f->description = $inputfields['data_index']['description'];
+        $f->value = ($data['data_index']) ? $data['data_index'] : '0';
+        $f->columnWidth = 50;
+        $form->add($f);
+
+        $wrap->add($form);
+
+        return $wrap;
+    }
+}
+
+
