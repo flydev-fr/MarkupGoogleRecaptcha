@@ -53,10 +53,9 @@ else
 	$form->add($submit);
 	
 	$out .= $form->render();
+	$out .= $captcha->getScript();
 
 }
-
-$out .= $captcha->getScript();
 
 echo $out;
 ```
@@ -67,7 +66,7 @@ $captcha = $modules->get("MarkupGoogleRecaptcha");
 // if submitted check response
 if ($captcha->verifyResponse() === true) 
 {
-	$out .= "Hi " . $_POST["name"] . " (" . $_POST["fullname"] . "), thanks for submitting the form!";
+	$out .= "Hi " . $input->post["name"] . ", thanks for submitting the form!";
 } 
 else 
 {
@@ -76,5 +75,9 @@ else
 	     . $captcha->render() // render reCaptcha
 	     . "\t<input type='submit'>\n"
 	     . "</form>\n";
+	     
+	$out .= $captcha->getScript();
 }
+
+echo $out;
 ```
