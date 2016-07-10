@@ -61,7 +61,7 @@ else
 echo $out;
 ```
 
-### A simple HTML form :
+### A plain HTML form :
 ```php
 $captcha = $modules->get("MarkupGoogleRecaptcha");
 // if submitted check response
