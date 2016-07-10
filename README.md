@@ -53,6 +53,7 @@ else
 	$form->add($submit);
 	
 	$out .= $form->render();
+	
 	$out .= $captcha->getScript();
 
 }
