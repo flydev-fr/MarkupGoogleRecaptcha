@@ -21,6 +21,7 @@ Render reCAPTCHA in an `InputfieldForm` by passing as argument your form to the 
 4. Call `verifyResponse()` to get the result. It return `TRUE` if the challenge was successfull.
 
 ### Example
+# We make a form using ProcessWire's API and inject the reCaptcha :
 ```php
 $out = '';
 
@@ -60,3 +61,20 @@ $out .= $captcha->getScript();
 echo $out;
 ```
 
+# A simple HTML form :
+```php
+$captcha = $modules->get("MarkupGoogleRecaptcha");
+// if submitted check response
+if ($captcha->verifyResponse() === true) 
+{
+	$out .= "Hi " . $_POST["name"] . " (" . $_POST["fullname"] . "), thanks for submitting the form!";
+} 
+else 
+{
+	$out .= "<form method='post' action='./'>\n"
+	     . "\t<input type='text' name='name'>\n"
+	     . $captcha->render() // render reCaptcha
+	     . "\t<input type='submit'>\n"
+	     . "</form>\n";
+}
+```
