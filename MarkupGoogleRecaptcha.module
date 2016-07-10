@@ -9,6 +9,7 @@ class MarkupGoogleRecaptcha extends WireData implements Module, ConfigurableModu
             'version' => 100,
             'author'  => 'flydev',
             'href'    => 'https://github.com/flydev-fr/MarkupGoogleRecaptcha',
+            'icon'    => 'puzzle-piece',
             'autoload'=> false,
             'singular'=> false
         ];
