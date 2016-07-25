@@ -57,7 +57,7 @@ class MarkupGoogleRecaptcha extends WireData implements Module, ConfigurableModu
             'data-theme'   => ($this->data_theme) ? 'dark' : 'light',
             'data-type'    => ($this->data_type)  ? 'audio' : 'image',
             'data-size'    => ($this->data_size)  ? 'compact' : 'normal',
-            'data_index'   => ($this->data_index) ? $this->data_index : '0'
+            'data-index'   => ($this->data_index) ? $this->data_index : '0'
         ];
 
         $div = '<div '.join(' ', array_map(function($key) use ($attributes)
@@ -142,7 +142,7 @@ class MarkupGoogleRecaptcha extends WireData implements Module, ConfigurableModu
         $f->name = $inputfields['data_index']['name'];
         $f->label = $inputfields['data_index']['label'];
         $f->description = $inputfields['data_index']['description'];
-        $f->value = ($data['data_index']) ? $data['data_index'] : '0';
+        $f->value = (isset($data['data_index'])) ? $data['data_index'] : '0';
         $f->columnWidth = 50;
         $form->add($f);
 
