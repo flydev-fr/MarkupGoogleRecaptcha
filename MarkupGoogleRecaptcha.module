@@ -33,26 +33,32 @@ class MarkupGoogleRecaptcha extends WireData implements Module, ConfigurableModu
     }
 
 
-    public function render($form = null)
+    public function render($form = null, $lang = "")
     {
         if(!$form instanceof InputfieldForm)
         {
-            $out = $this->buildGoogleDiv();
+            $out = $this->buildGoogleDiv($lang);
             return $out;
         }
         else
         {
             $inputfield = $this->modules->get("InputfieldMarkup");
-            $inputfield->value = $this->buildGoogleDiv();
+            $inputfield->value = $this->buildGoogleDiv($lang);
 
             $form->add($inputfield);
         }
     }
 
-    protected function buildGoogleDiv()
+    protected function buildGoogleDiv($lang = "")
     {
+        $reCaptchaClass = "g-recaptcha";
+        $reCaptchaID = $reCaptchaClass . "-" . uniqid();
+
         $attributes = [
-            'class'        => 'g-recaptcha',
+            'id'           => $reCaptchaID,
+            'class'        => $reCaptchaClass,
+            'data-id'      => $reCaptchaID,
+            'data-hl'      => $lang,
             'data-sitekey' => $this->site_key,
             'data-theme'   => ($this->data_theme) ? 'dark' : 'light',
             'data-type'    => ($this->data_type)  ? 'audio' : 'image',
@@ -72,7 +78,39 @@ class MarkupGoogleRecaptcha extends WireData implements Module, ConfigurableModu
 
     public function getScript()
     {
-        return "<script src=".self::SITE_RECAPTCHA_API_URL."></script>";
+        return "<script src='".self::SITE_RECAPTCHA_API_URL."' async defer></script>";
+    }
+
+    public function getScriptMulti() {
+        $return = "<script type=\"text/javascript\">
+                    var onloadReCaptchaCallback = function(){
+                        jQuery('.g-recaptcha').each(function() {
+                            var _this = jQuery(this);
+                            var recaptchaID = _this.data('id'),
+                                hl = _this.data('hl'),
+                                sitekey = _this.data('sitekey'),
+                                theme = _this.data('theme'),
+                                type = _this.data('type'),
+                                size = _this.data('size'),
+                                index = _this.data('index');
+                            if(recaptchaID !== undefined) {
+                                var recaptchaWidget = grecaptcha.render(recaptchaID, {
+                                    'hl' : hl,
+                                    'sitekey' : sitekey,
+                                    'theme' : theme,
+                                    'type' : type,
+                                    'size' : size,
+                                    'index' : index
+                                });
+                                grecaptcha.getResponse(recaptchaWidget);
+                                // grecaptcha.reset(recaptchaWidget);
+                            }
+                        });
+                    };
+                </script>";
+        $return .= "<script src='".self::SITE_RECAPTCHA_API_URL."?onload=onloadReCaptchaCallback&render=explicit' async defer></script>";
+
+        return $return;
     }
 
     public function verifyResponse()
